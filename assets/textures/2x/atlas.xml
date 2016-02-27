@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://www.codeandweb.com/texturepacker-->
+<!-- $TexturePacker:SmartUpdate:5897cdad6cf63479d7e77c7e17b1567a:7e087a4680698da3e4fc5095a8943746:cde709370900f12288f3449eded86f07$ -->
+<TextureAtlas imagePath="atlas.png" width="256" height="512">
+    <SubTexture name="boss_unitato" x="0" y="0" width="256" height="171"/>
+    <SubTexture name="button_normal" x="0" y="171" width="179" height="74"/>
+    <SubTexture name="potato" x="179" y="171" width="56" height="90"/>
+    <SubTexture name="space-ship" x="0" y="261" width="75" height="89"/>
+</TextureAtlas>
