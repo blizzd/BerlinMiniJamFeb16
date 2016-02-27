@@ -27,6 +27,7 @@ import starling.utils.deg2rad;
         private var potatoCount:int = 1;
 
         private var scoreTextField:TextField;
+        private var levelTextField:TextField;
         private var score:Number = 0;
         
         public function Game()
@@ -37,6 +38,7 @@ import starling.utils.deg2rad;
         private function init():void
         {
             addScore();
+            addLevel();
             addSpaceShip();
             moveSpaceship();
             addNewPotatoes();
@@ -51,6 +53,16 @@ import starling.utils.deg2rad;
             scoreTextField.x = (Constants.STAGE_WIDTH - scoreTextField.width) / 2;
             scoreTextField.y = 5;
             addChild(scoreTextField);
+        }
+
+        //LEVEL
+
+        private function addLevel():void {
+            levelTextField = new TextField(350, 50, " Level: " + getLevelFactor() * 10 + 1,
+                    "Desyrel", BitmapFont.NATIVE_SIZE, 0xffffff);
+            levelTextField.x = (Constants.STAGE_WIDTH - levelTextField.width) / 2;
+            levelTextField.y = Constants.STAGE_HEIGHT - levelTextField.height;
+            addChild(levelTextField);
         }
 
         // SPACESHIP
@@ -74,8 +86,8 @@ import starling.utils.deg2rad;
 
             mSpaceship.addEventListener(Event.ENTER_FRAME, onShipGoingToHit);
 
-            
-            Starling.juggler.tween(mSpaceship, Math.random() * 0.5 + 0.5, {
+
+            Starling.juggler.tween(mSpaceship, Math.random() * 0.5 + 1.5 - getLevelFactor(), {
                 x: endX,
                 y: endY,
                 scaleX: scale,
@@ -123,7 +135,7 @@ import starling.utils.deg2rad;
         // POTATOES
 
         private function addNewPotatoes():void {
-            Starling.juggler.repeatCall(spawnPotato, 5, 0);
+            Starling.juggler.repeatCall(spawnPotato, 5 - getLevelFactor(), 0);
         }
 
         private function spawnPotato():void {
@@ -183,6 +195,15 @@ import starling.utils.deg2rad;
                 score +=50;
                 scoreTextField.text = "Score: " + score;
             }
+        }
+
+        // LEVEL Factorizer
+
+        private function getLevelFactor():Number {
+            var levelFactor:Number = parseFloat((potatoCount / 100).toFixed(1));
+            trace("Level " + levelFactor);
+            if (levelTextField) levelTextField.text = " Level: " + levelFactor * 10 + 1;
+            return levelFactor;
         }
 
         // WHEN YOU FAILED ...
