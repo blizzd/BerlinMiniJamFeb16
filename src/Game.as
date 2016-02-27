@@ -58,7 +58,8 @@ import starling.utils.deg2rad;
         //LEVEL
 
         private function addLevel():void {
-            levelTextField = new TextField(350, 50, " Level: " + getLevelFactor() * 10 + 1,
+            var currentLevel:Number = (getLevelFactor() * 10) + 1;
+            levelTextField = new TextField(350, 50, " Level: " + currentLevel,
                     "Desyrel", BitmapFont.NATIVE_SIZE, 0xffffff);
             levelTextField.x = (Constants.STAGE_WIDTH - levelTextField.width) / 2;
             levelTextField.y = Constants.STAGE_HEIGHT - levelTextField.height;
@@ -202,7 +203,8 @@ import starling.utils.deg2rad;
         private function getLevelFactor():Number {
             var levelFactor:Number = parseFloat((potatoCount / 100).toFixed(1));
             trace("Level " + levelFactor);
-            if (levelTextField) levelTextField.text = " Level: " + levelFactor * 10 + 1;
+            var currentLevel:Number = (levelFactor * 10) + 1;
+            if (levelTextField) levelTextField.text = " Level: " + currentLevel;
             return levelFactor;
         }
 
