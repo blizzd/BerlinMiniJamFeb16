@@ -1,11 +1,14 @@
 package 
 {
-    import starling.animation.Transitions;
+import flash.geom.Rectangle;
+
+import starling.animation.Transitions;
     import starling.core.Starling;
 import starling.display.DisplayObject;
 import starling.display.Image;
     import starling.display.Sprite;
-    import starling.events.TouchEvent;
+import starling.events.Event;
+import starling.events.TouchEvent;
     import starling.events.TouchPhase;
 import starling.text.BitmapFont;
 import starling.text.TextField;
@@ -20,7 +23,7 @@ import starling.utils.deg2rad;
         
         private var mSpaceship:Image;
 
-        private var potatoCount:int = 0;
+        private var potatoCount:int = 1;
 
         private var scoreTextField:TextField;
         private var score:Number = 0;
@@ -33,10 +36,12 @@ import starling.utils.deg2rad;
         private function init():void
         {
             addScore();
-            addBird();
-            moveBird();
+            addSpaceShip();
+            moveSpaceship();
             addNewPotatoes();
         }
+
+        //SCORE
 
         private function addScore():void {
             var scoreText:String = "Score: " + score;
@@ -47,7 +52,9 @@ import starling.utils.deg2rad;
             addChild(scoreTextField);
         }
 
-        private function addBird():void {
+        // SPACESHIP
+
+        private function addSpaceShip():void {
             mSpaceship = new Image(Root.assets.getTexture("space-ship"));
             mSpaceship.pivotX = mSpaceship.width / 2;
             mSpaceship.pivotY = mSpaceship.height / 2;
@@ -56,20 +63,37 @@ import starling.utils.deg2rad;
             mSpaceship.addEventListener(TouchEvent.TOUCH, onSpaceShipTouched);
             addChild(mSpaceship);
         }
-        
-        private function moveBird():void
+
+        private function moveSpaceship():void
         {
             var scale:Number = Math.random() * 0.8 + 0.2;
+            var endX:Number = Math.random() * (Constants.STAGE_WIDTH - mSpaceship.width);
+            var endY:Number = Math.random() * (Constants.STAGE_HEIGHT - mSpaceship.height);
+
+
+            mSpaceship.addEventListener(Event.ENTER_FRAME, onShipGoingToHit);
+
             
             Starling.juggler.tween(mSpaceship, Math.random() * 0.5 + 0.5, {
-                x: Math.random() * Constants.STAGE_WIDTH,
-                y: Math.random() * Constants.STAGE_HEIGHT,
+                x: endX,
+                y: endY,
                 scaleX: scale,
                 scaleY: scale,
                 rotation: Math.random() * deg2rad(180) - deg2rad(90),
                 transition: Transitions.EASE_IN_OUT,
-                onComplete: moveBird
+                onComplete: moveSpaceship
             });
+        }
+
+        // Spaceship collision detection
+
+        private function onShipGoingToHit(event:Event):void {
+            var potatoBeingAboutToGetHit:Image = willShipHitSomething();
+            if (potatoBeingAboutToGetHit) {
+                if (mSpaceship.getBounds(mSpaceship.root).intersects(potatoBeingAboutToGetHit.getBounds(potatoBeingAboutToGetHit.root))) {
+                    doGameOver();
+                }
+            }
         }
         
         private function onSpaceShipTouched(event:TouchEvent):void
@@ -77,31 +101,44 @@ import starling.utils.deg2rad;
             if (event.getTouch(mSpaceship, TouchPhase.BEGAN))
             {
                 Root.assets.playSound("click");
-                Starling.juggler.removeTweens(mSpaceship);
-                Constants.lastScore = score;
-                dispatchEventWith(GAME_OVER, true, score);
+                doGameOver();
             }
         }
+
+        private function willShipHitSomething():Image {
+            var potatoForTest:Image;
+            for (var counter:int = 0; counter < this.numChildren; counter++) {
+                if (this.getChildAt(counter).name && this.getChildAt(counter).name.indexOf("potato") != -1) {
+                    potatoForTest = this.getChildAt(counter) as Image;
+                    if (mSpaceship.getBounds(mSpaceship.root).intersects(potatoForTest.getBounds(potatoForTest.root))) {
+                        return potatoForTest;
+                    }
+                }
+            }
+            return null;
+        }
+
+        // POTATOES
 
         private function addNewPotatoes():void {
             Starling.juggler.repeatCall(spawnPotato, 5, 0);
         }
 
         private function spawnPotato():void {
-            if (potatoCount<10) {
+            if (potatoCount % 10 != 0) {
                 var mPotato:Image = new Image(Root.assets.getTexture("potato"));
+                mPotato.name = "potato" + potatoCount;
                 mPotato.pivotX = mPotato.width / 2;
                 mPotato.pivotY = mPotato.height / 2;
-                mPotato.x = Constants.STAGE_WIDTH / 2 + Math.random() * 100;
-                mPotato.y = Constants.STAGE_HEIGHT / 2 + Math.random() * 100;
+                mPotato.x = Math.random() * (Constants.STAGE_WIDTH - mPotato.width);
+                mPotato.y = Math.random() * (Constants.STAGE_HEIGHT - mPotato.height);
                 mPotato.scaleX = 0.5;
                 mPotato.scaleY = 0.5;
                 mPotato.addEventListener(TouchEvent.TOUCH, onPotatoTouched);
                 addChild(mPotato);
                 potatoCount++;
-                Starling.juggler.repeatCall(rotatePotato, 0.1, 0, mPotato);
+                Starling.juggler.repeatCall(rotatePotatoBeing, 0.1, 0, mPotato);
             }else{
-                potatoCount = 0;
                 spawnUnitatoBoss();
             }
         }
@@ -116,20 +153,23 @@ import starling.utils.deg2rad;
             }
         }
 
-        private function rotatePotato(mPotato:Image):void {
-            mPotato.rotation += MathUtil.normalizeAngle(1);
+        private function rotatePotatoBeing(potatoBeing:Image):void {
+            potatoBeing.rotation += MathUtil.normalizeAngle(1);
         }
+
+        // BOSS POTATO
 
         private function spawnUnitatoBoss():void {
             var mBoss:Image = new Image(Root.assets.getTexture("boss_unitato"));
             mBoss.pivotX = mBoss.width / 2;
             mBoss.pivotY = mBoss.height / 2;
-            mBoss.x = Constants.STAGE_WIDTH / 2 + Math.random() * 10;
-            mBoss.y = Constants.STAGE_HEIGHT / 2 + Math.random() * 10;
+            mBoss.x = Math.random() * (Constants.STAGE_WIDTH - mBoss.width);
+            mBoss.y = Math.random() * (Constants.STAGE_HEIGHT - mBoss.height);
             mBoss.scaleX = 0.5;
             mBoss.scaleY = 0.5;
             mBoss.addEventListener(TouchEvent.TOUCH, onBossTouched);
             addChild(mBoss);
+            Starling.juggler.repeatCall(rotatePotatoBeing, 0.5, 0, mBoss);
         }
 
         private function onBossTouched(event:TouchEvent):void {
@@ -140,6 +180,15 @@ import starling.utils.deg2rad;
                 score +=50;
                 scoreTextField.text = "Score: " + score;
             }
+        }
+
+        // WHEN YOU FAILED ...
+
+        private function doGameOver():void {
+            Starling.juggler.removeTweens(mSpaceship);
+            Constants.lastScore = score;
+            Starling.juggler.purge();
+            dispatchEventWith(GAME_OVER, true, score);
         }
     }
 }
