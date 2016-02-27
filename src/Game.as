@@ -1,6 +1,7 @@
 package 
 {
 import flash.geom.Rectangle;
+import flash.utils.setTimeout;
 
 import starling.animation.Transitions;
     import starling.core.Starling;
@@ -91,7 +92,8 @@ import starling.utils.deg2rad;
             var potatoBeingAboutToGetHit:Image = willShipHitSomething();
             if (potatoBeingAboutToGetHit) {
                 if (mSpaceship.getBounds(mSpaceship.root).intersects(potatoBeingAboutToGetHit.getBounds(potatoBeingAboutToGetHit.root))) {
-                    doGameOver();
+                    Starling.current.stop();
+                    setTimeout(doGameOver, 1000);
                 }
             }
         }
@@ -169,6 +171,7 @@ import starling.utils.deg2rad;
             mBoss.scaleY = 0.5;
             mBoss.addEventListener(TouchEvent.TOUCH, onBossTouched);
             addChild(mBoss);
+            potatoCount++;
             Starling.juggler.repeatCall(rotatePotatoBeing, 0.5, 0, mBoss);
         }
 

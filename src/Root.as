@@ -1,6 +1,7 @@
 package
 {
-    import starling.display.Image;
+import starling.core.Starling;
+import starling.display.Image;
     import starling.display.Sprite;
     import starling.events.Event;
     import starling.utils.AssetManager;
@@ -49,6 +50,7 @@ package
         private function showScene(screen:Class):void
         {
             if (mActiveScene) mActiveScene.removeFromParent(true);
+            if (!Starling.current.isStarted) Starling.current.start();
             mActiveScene = new screen();
             addChild(mActiveScene);
         }
